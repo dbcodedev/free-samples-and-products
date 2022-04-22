@@ -10,51 +10,37 @@ import {
 } from "@shopify/app-bridge-react";
 import { authenticatedFetch } from "@shopify/app-bridge-utils";
 import { Redirect } from "@shopify/app-bridge/actions";
-import { AppProvider as PolarisProvider, Frame } from "@shopify/polaris";
+import { AppProvider } from "@shopify/polaris";
 import translations from "@shopify/polaris/locales/en.json";
 import "@shopify/polaris/build/esm/styles.css";
 
-import { useState } from "react";
+import { BrowserRouter } from 'react-router-dom';
 
-import { EmptyStatePage } from "./components/EmptyStatePage";
-import { ProductsPage } from "./components/ProductsPage";
-import { NavigationMenu } from "./components/NavigationMenu";
+import { Link } from "./router/Link";
+import AppRoutes from "./router/AppRoutes";
 
 export default function App() {
-  const localStorageSelection = window.localStorage.getItem("selectedProducts");
-  const [productsSelection, setProductsSelection] = useState(localStorageSelection ? JSON.parse(localStorageSelection) : []);
-
-  function handleSelectProducts(products) {
-    setProductsSelection(products);
-    window.localStorage.setItem("selectedProducts", JSON.stringify(products));
-  }
 
   return (
-    <PolarisProvider i18n={translations}>
-      <AppBridgeProvider
-        config={{
-          apiKey: process.env.SHOPIFY_API_KEY,
-          host: new URL(location).searchParams.get("host"),
-          forceRedirect: true,
-        }}
-      >
-        <MyProvider>
-          <Frame
-            navigation={<NavigationMenu />}
+    <BrowserRouter>
+      <AppProvider i18n={translations} linkComponent={Link}>
+          <AppBridgeProvider
+            config={{
+              apiKey: process.env.SHOPIFY_API_KEY,
+              host: new URL(location).searchParams.get("host"),
+              forceRedirect: true,
+            }}
           >
-            {productsSelection.length > 0 ? (
-              <ProductsPage productIds={productsSelection} />
-            ) : (
-              <EmptyStatePage setSelection={handleSelectProducts} />
-            )}
-          </Frame>
-        </MyProvider>
-      </AppBridgeProvider>
-    </PolarisProvider>
+            <MyApolloProvider>
+              <AppRoutes />
+            </MyApolloProvider>
+          </AppBridgeProvider>
+      </AppProvider>
+    </BrowserRouter>
   );
 }
 
-function MyProvider({ children }) {
+function MyApolloProvider({ children }) {
   const app = useAppBridge();
 
   const client = new ApolloClient({

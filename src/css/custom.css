@@ -1,0 +1,9 @@
+.enable-app-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.enable-app-button {
+    margin-left: auto;
+}
