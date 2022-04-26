@@ -19,8 +19,8 @@ function AppRoutes(props) {
   return (
     <Routes>
         <Route path="/" element={<ManageProducts />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/customize" element={<Customize />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="customize" element={<Customize />} />
     </Routes>
   )
 }

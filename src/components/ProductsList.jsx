@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { ResourceList, ResourceItem, TextStyle, Stack, Thumbnail, Card, Banner } from "@shopify/polaris";
 import { Loading, ResourcePicker } from "@shopify/app-bridge-react";
-import { GetProductById } from "../graphql/queries";
+import { GetProductsById } from "../graphql/queries";
 
 export function ProductsList({productIds, selectProducts, updateSelection}) {
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
   
-  const { loading, error, data } = useQuery(GetProductById, {
+  const { loading, error, data } = useQuery(GetProductsById, {
     variables: { ids: productIds },
   });
 
@@ -40,8 +40,8 @@ export function ProductsList({productIds, selectProducts, updateSelection}) {
   }
 
   return (
-    <Card primaryFooterAction={{content: 'Save'}}>
-      <ResourcePicker // Resource picker component
+    <Card>
+      <ResourcePicker
         resourceType="Product"
         showVariants={false}
         open={resourcePickerOpen}
@@ -85,6 +85,7 @@ export function ProductsList({productIds, selectProducts, updateSelection}) {
                     <h3>
                       <TextStyle variation="strong">{item.title}</TextStyle>
                     </h3>
+                    <p>{item.totalInventory} in stock</p>
                   </Stack.Item>
                 </Stack>
               </ResourceItem>

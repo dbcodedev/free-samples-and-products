@@ -1,4 +1,4 @@
-import { Frame, Page } from "@shopify/polaris";
+import { Page, Toast, Frame } from "@shopify/polaris";
 import { useState, useEffect } from "react";
 import { EmptyStatePage } from "./EmptyStatePage";
 import { ProductsList } from "./ProductsList";
@@ -6,6 +6,7 @@ import { ProductsList } from "./ProductsList";
 export function ManageProducts() {
 
   const [productsSelection, setProductsSelection] = useState([]);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const localStorageSelection = window.localStorage.getItem("selectedProducts");
@@ -14,13 +15,13 @@ export function ManageProducts() {
     }
   }, [])
 
-  function selectProducts(products) {
+  const selectProducts = (products) => {
     const newSelection = productsSelection.concat(products);
     setProductsSelection(newSelection);
     window.localStorage.setItem("selectedProducts", JSON.stringify(newSelection));
   }
 
-  function updateProductsSelection(products) {
+  const updateProductsSelection = (products) => {
     const newSelection = productsSelection.filter(p => {
       return !products.includes(p);
     })
@@ -28,15 +29,29 @@ export function ManageProducts() {
     window.localStorage.setItem("selectedProducts", JSON.stringify(newSelection));
   }
 
+  const saveProductsSelection = async () => {
+      setShowToast(show => !show);
+  };
+
   return (
-    <Page>
-      <Frame>
-        {productsSelection.length > 0 ? (
+    <>
+      {productsSelection.length > 0 ? 
+        <Page
+          title="Manage products"
+          primaryAction={{
+              content: 'Save',
+              onAction: () => saveProductsSelection()
+          }}>
+            <Frame>
+              {showToast && <Toast content="Products selection saved" onDismiss={() => setShowToast(show => !show)}/>}
               <ProductsList productIds={productsSelection} selectProducts={selectProducts} updateSelection={updateProductsSelection} />
-            ) : (
-              <EmptyStatePage selectProducts={selectProducts} />
-        )}
-      </Frame>
-    </Page>
+            </Frame>
+        </Page> 
+        :
+        <Page>
+          <EmptyStatePage selectProducts={selectProducts} />
+        </Page>
+      }
+    </>
   );
 }

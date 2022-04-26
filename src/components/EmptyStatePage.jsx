@@ -13,25 +13,25 @@ export function EmptyStatePage({ selectProducts }) {
   };
 
   return (
-      <Layout>
-          <ResourcePicker // Resource picker component
-            resourceType="Product"
-            showVariants={false}
-            open={resourcePickerOpen}
-            onSelection={(resources) => handleSelection(resources)}
-            onCancel={() => setResourcePickerOpen(false)}
-          />
-        <EmptyState
-          heading="Start by selecting the products"
-          action={{
-            content: "Select products",
-            onAction: () => setResourcePickerOpen(true),
-          }}
-          image={emptystate}
-          imageContained
-        >
-          <p>Choose from the catalog the products you want to propose as free samples or free products.</p>
-        </EmptyState>
-      </Layout>
+    <Layout>
+        <ResourcePicker // Resource picker component
+          resourceType="Product"
+          showVariants={false}
+          open={resourcePickerOpen}
+          onSelection={(resources) => handleSelection(resources)}
+          onCancel={() => setResourcePickerOpen(false)}
+        />
+      <EmptyState
+        heading="Start by selecting the products"
+        action={{
+          content: "Select products",
+          onAction: () => setResourcePickerOpen(true),
+        }}
+        image={emptystate}
+        imageContained
+      >
+        <p>Choose from the catalog the products you want to propose as free samples or free products.</p>
+      </EmptyState>
+    </Layout>
   );
 }
