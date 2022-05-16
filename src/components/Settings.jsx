@@ -1,12 +1,12 @@
-import { ResourcePicker, Toast } from "@shopify/app-bridge-react";
+import { ResourcePicker, Toast, useAppBridge } from "@shopify/app-bridge-react";
 import { Button, Card, Checkbox, FormLayout, Frame, Icon, Layout, Page, PageActions, TextContainer, TextField } from "@shopify/polaris";
 import { CircleTickOutlineMinor, CircleCancelMinor } from '@shopify/polaris-icons';
 import { useState, useCallback } from "react";
 import { ProductsList } from "./ProductsList";
 import "../css/custom.css";
-import { setDoc, collection, doc, getDocs } from "firebase/firestore";
-import { db } from "../firebase/Config";
 import { useSettings } from "../context/SettingsContext";
+import { useSaveData } from "../hooks/useBackend";
+import { getSessionToken } from "@shopify/app-bridge-utils";
 
 export function Settings() {
 
@@ -49,17 +49,18 @@ export function Settings() {
         })
     };
 
-    const saveSettings = async () => {
-        await setDoc(doc(db, "settings", "test"), settings);
-        setShowToast(show => !show);
-    };
+    const token = async () => {
+        const sessionToken = await getSessionToken(useAppBridge());
+        console.log(sessionToken)
+    }
+    token()
 
     return (
         <Page 
             title="Settings"
             primaryAction={{
                 content: 'Save',
-                onAction: () => saveSettings()
+                onAction: () => useSaveData("settings", "test", settings)
             }}>
             <Frame>
                 {showToast && <Toast content="Settings updated" onDismiss={() => setShowToast(show => !show)}/>}
