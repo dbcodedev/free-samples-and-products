@@ -1,12 +1,14 @@
-import { ResourcePicker, Toast, useAppBridge } from "@shopify/app-bridge-react";
+import { ResourcePicker, Toast } from "@shopify/app-bridge-react";
 import { Button, Card, Checkbox, FormLayout, Frame, Icon, Layout, Page, PageActions, TextContainer, TextField } from "@shopify/polaris";
 import { CircleTickOutlineMinor, CircleCancelMinor } from '@shopify/polaris-icons';
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ProductsList } from "./ProductsList";
 import "../css/custom.css";
 import { useSettings } from "../context/SettingsContext";
 import { useSaveData } from "../hooks/useBackend";
-import { getSessionToken } from "@shopify/app-bridge-utils";
+
+import { useAppBridge } from "@shopify/app-bridge-react";
+import { userLoggedInFetch } from "../App";
 
 export function Settings() {
 
@@ -31,6 +33,18 @@ export function Settings() {
 
     const [showToast, setShowToast] = useState(false);
 
+    const app = useAppBridge();
+    const fetch = userLoggedInFetch(app);
+
+    async function fetchContent() {
+        const res = await fetch("/apps/settings"); 
+        const { text } = await res.json();
+        console.log(text)
+    }
+
+    useEffect(() => {
+        fetchContent()
+    }, [])
 
     const handleProductsSelection = (resources) => {
         toggleProductPicker();
@@ -48,12 +62,6 @@ export function Settings() {
           [id]:value
         })
     };
-
-    const token = async () => {
-        const sessionToken = await getSessionToken(useAppBridge());
-        console.log(sessionToken)
-    }
-    token()
 
     return (
         <Page 

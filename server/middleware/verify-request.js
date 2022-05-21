@@ -22,7 +22,7 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
       return res.redirect(`/auth?shop=${shop}`);
     }
 
-    if (session?.isActive()) {
+    /*if (session?.isActive()) {
       try {
         // make a request to make sure oauth has succeeded, retry otherwise
         const client = new Shopify.Clients.Graphql(
@@ -37,6 +37,35 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
           e.response.code === 401
         ) {
           // We only want to catch 401s here, anything else should bubble up
+        } else {
+          throw e;
+        }
+      }
+    }*/
+
+    const isSessionActive = (session) => {
+      if (!session) {
+        return false;
+      } else {
+        return (
+          Shopify.Context.SCOPES.equals(session.scope) &&
+          session.accessToken &&
+          (!session.expires || session.expires >= new Date())
+        );
+      }
+    };
+
+    if (isSessionActive(session)) {
+      try {
+        const client = new Shopify.Clients.Graphql(
+          session.shop,
+          session.accessToken
+        );
+        await client.query({ data: TEST_GRAPHQL_QUERY });
+        return next();
+      } catch (e) {
+        if (e instanceof Shopify.Errors.HttpResponseError && e.response.code === 401) {
+          // nothing to do, only catch 401 errors
         } else {
           throw e;
         }

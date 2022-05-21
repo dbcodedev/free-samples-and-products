@@ -9,6 +9,8 @@ import applyAuthMiddleware from "./middleware/auth.js";
 import verifyRequest from "./middleware/verify-request.js";
 import sessionStorage from "../utils/sessionStorage.js";
 
+import routes from "./routes/index.js";
+
 import mongoose from "mongoose";
 
 const USE_ONLINE_TOKENS = true;
@@ -114,6 +116,8 @@ export async function createServer(
       next();
     }
   });
+
+  app.use("/apps", verifyRequest(app), routes);
 
   /**
    * @type {import('vite').ViteDevServer}
