@@ -6,7 +6,9 @@ import { Shopify, ApiVersion } from "@shopify/shopify-api";
 import "dotenv/config";
 
 import applyAuthMiddleware from "./middleware/auth.js";
+import csp from "./middleware/csp.js";
 import verifyRequest from "./middleware/verify-request.js";
+import isActiveShop from "./middleware/isActiveShop.js";
 import sessionStorage from "../utils/sessionStorage.js";
 
 import routes from "./routes/index.js";
@@ -23,7 +25,7 @@ const isTest = process.env.NODE_ENV === "test" || !!process.env.VITE_TEST_BUILD;
 mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", error => console.log(error));
-db.once("open", () => console.log("Connected to mongoose"));
+//db.once("open", () => console.log("Connected to mongoose"));
 
 Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
@@ -54,7 +56,7 @@ export async function createServer(
 ) {
   const app = express();
   app.set("top-level-oauth-cookie", TOP_LEVEL_OAUTH_COOKIE);
-  app.set("active-shopify-shops", ACTIVE_SHOPIFY_SHOPS);
+  //app.set("active-shopify-shops", ACTIVE_SHOPIFY_SHOPS);
   app.set("use-online-tokens", USE_ONLINE_TOKENS);
 
   app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
@@ -91,8 +93,10 @@ export async function createServer(
   });
 
   app.use(express.json());
+  app.use(csp);
+  app.use(isActiveShop);
 
-  app.use((req, res, next) => {
+  /*app.use((req, res, next) => {
     const shop = req.query.shop;
     if (Shopify.Context.IS_EMBEDDED_APP && shop) {
       res.setHeader(
@@ -103,9 +107,9 @@ export async function createServer(
       res.setHeader("Content-Security-Policy", `frame-ancestors 'none';`);
     }
     next();
-  });
+  });*/
 
-  app.use("/*", (req, res, next) => {
+  /*app.use("/*", (req, res, next) => {
     const shop = req.query.shop;
 
     // Detect whether we need to reinstall the app, any request from Shopify will
@@ -115,7 +119,7 @@ export async function createServer(
     } else {
       next();
     }
-  });
+  });*/
 
   app.use("/apps", verifyRequest(app), routes);
 

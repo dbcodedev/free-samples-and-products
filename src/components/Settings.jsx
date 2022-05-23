@@ -36,14 +36,14 @@ export function Settings() {
     const app = useAppBridge();
     const fetch = userLoggedInFetch(app);
 
-    async function fetchContent() {
+    async function fetchSettings() {
         const res = await fetch("/apps/settings"); 
         const { text } = await res.json();
         console.log(text)
     }
 
     useEffect(() => {
-        fetchContent()
+        fetchSettings()
     }, [])
 
     const handleProductsSelection = (resources) => {

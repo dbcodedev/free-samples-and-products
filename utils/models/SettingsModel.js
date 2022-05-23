@@ -8,11 +8,7 @@ const settingsSchema = new mongoose.Schema({
     content: {
       type: String,
       required: true,
-    },
-    shop: {
-      type: String,
-      required: true,
-    },
+    }
   });
 
   const SettingsModel = mongoose.model("settings", settingsSchema);
