@@ -7,11 +7,15 @@ import "dotenv/config";
 
 import applyAuthMiddleware from "./middleware/auth.js";
 import csp from "./middleware/csp.js";
-import verifyRequest from "./middleware/verify-request.js";
+import verifyRequest from "./middleware/verifyRequest.js";
 import isActiveShop from "./middleware/isActiveShop.js";
 import sessionStorage from "../utils/sessionStorage.js";
+import webhookRoutes from "./webhooks/routes.js";
 
 import routes from "./routes/index.js";
+
+import { appUninstallHandler } from "./webhooks/app_uninstalled.js";
+import { customerDataRequest, customerRedact, shopRedact } from "./webhooks/gdpr.js";
 
 import mongoose from "mongoose";
 
@@ -19,10 +23,10 @@ const USE_ONLINE_TOKENS = true;
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth";
 
 const PORT = parseInt(process.env.PORT || "8081", 10);
-const isTest = process.env.NODE_ENV === "test" || !!process.env.VITE_TEST_BUILD;
+const isDev = process.env.NODE_ENV === "dev";
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URL);
 const db = mongoose.connection;
 db.on("error", error => console.log(error));
 //db.once("open", () => console.log("Connected to mongoose"));
@@ -41,11 +45,30 @@ Shopify.Context.initialize({
 
 // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
 // persist this object in your app.
-const ACTIVE_SHOPIFY_SHOPS = {};
+/*const ACTIVE_SHOPIFY_SHOPS = {};
 Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
   path: "/webhooks",
   webhookHandler: async (topic, shop, body) => {
     delete ACTIVE_SHOPIFY_SHOPS[shop]
+  },
+});*/
+
+Shopify.Webhooks.Registry.addHandlers({
+  APP_UNINSTALLED: {
+    path: "/webhooks/app_uninstalled",
+    webhookHandler: appUninstallHandler,
+  },
+  CUSTOMERS_DATA_REQUEST: {
+    path: "/webhooks/gdpr/customers_data_request",
+    webhookHandler: customerDataRequest,
+  },
+  CUSTOMERS_REDACT: {
+    path: "/webhooks/gdpr/customers_redact",
+    webhookHandler: customerRedact,
+  },
+  SHOP_REDACT: {
+    path: "/webhooks/gdpr/shop_redact",
+    webhookHandler: shopRedact,
   },
 });
 
@@ -63,25 +86,9 @@ export async function createServer(
 
   applyAuthMiddleware(app);
 
-  app.post("/webhooks", async (req, res) => {
-    try {
-      await Shopify.Webhooks.Registry.process(req, res);
-      console.log(`Webhook processed, returned status code 200`);
-    } catch (error) {
-      console.log(`Failed to process webhook: ${error}`);
-      res.status(500).send(error.message);
-    }
-  });
+  app.use("/webhooks", webhookRoutes);
 
-  app.get("/products-count", verifyRequest(app), async (req, res) => {
-    const session = await Shopify.Utils.loadCurrentSession(req, res, true);
-    const { Product } = await import(
-      `@shopify/shopify-api/dist/rest-resources/${Shopify.Context.API_VERSION}/index.js`
-    );
-
-    const countData = await Product.count({ session });
-    res.status(200).send(countData);
-  });
+  app.use("/apps", verifyRequest(app), routes);
 
   app.post("/graphql", verifyRequest(app), async (req, res) => {
     try {
@@ -121,8 +128,6 @@ export async function createServer(
     }
   });*/
 
-  app.use("/apps", verifyRequest(app), routes);
-
   /**
    * @type {import('vite').ViteDevServer}
    */
@@ -131,7 +136,7 @@ export async function createServer(
     vite = await import("vite").then(({ createServer }) =>
       createServer({
         root,
-        logLevel: isTest ? "error" : "info",
+        logLevel: isDev ? "error" : "info",
         server: {
           port: PORT,
           hmr: {
@@ -167,6 +172,6 @@ export async function createServer(
   return { app, vite };
 }
 
-if (!isTest) {
+if (!isDev) {
   createServer().then(({ app }) => app.listen(PORT));
 }

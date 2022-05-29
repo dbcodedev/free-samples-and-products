@@ -15,11 +15,11 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
       app.get("use-online-tokens")
     );
 
-    let shop = req.query.shop;
+    let { shop, host } = req.query;
 
     if (session && shop && session.shop !== shop) {
       // The current request is for a different shop. Redirect gracefully.
-      return res.redirect(`/auth?shop=${shop}`);
+      return res.redirect(`/auth?shop=${shop}&host=${host}`);
     }
 
     /*if (session?.isActive()) {
@@ -102,7 +102,7 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
       );
       res.end();
     } else {
-      res.redirect(`/auth?shop=${shop}`);
+      res.redirect(`/auth?shop=${shop}&host=${host}`);
     }
   };
 }

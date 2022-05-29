@@ -5,6 +5,7 @@ import { Shopify } from "@shopify/shopify-api";
 const routes = express.Router()
 
 routes.get("/settings", async (req, res) => {
+    console.log("GET /settings")
     const session = await Shopify.Utils.loadCurrentSession(req, res);
     const shop = session.shop;
     const settings = await SettingsModel.findOne({ id: shop });
@@ -14,7 +15,7 @@ routes.get("/settings", async (req, res) => {
             content: "test"
         });
     }
-    console.log(settings)
+    //console.log(settings)
     res.status(200);
 });
 

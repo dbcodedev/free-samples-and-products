@@ -5,6 +5,6 @@ const StoreSchema = new mongoose.Schema({
   isActive: { type: Boolean, required: true, default: false },
 });
 
-const StoreModel = mongoose.model("Active_Stores", StoreSchema);
+const StoreModel = mongoose.model("active_Stores", StoreSchema);
 
 export default StoreModel;
