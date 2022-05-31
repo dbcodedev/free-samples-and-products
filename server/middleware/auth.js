@@ -1,8 +1,9 @@
 import { Shopify } from "@shopify/shopify-api";
 import SessionModel from "../../utils/models/SessionModel.js";
 import StoreModel from "../../utils/models/StoreModel.js";
+import webhookRegistrar from "../webhooks/webhookRegistrar.js";
 
-import topLevelAuthRedirect from "../helpers/top-level-auth-redirect.js";
+import topLevelAuthRedirect from "../../utils/topLevelAuthRedirect.js";
 
 export default function applyAuthMiddleware(app) {
   
@@ -15,8 +16,8 @@ export default function applyAuthMiddleware(app) {
       req,
       res,
       req.query.shop,
-      "/auth/callback",
-      app.get("use-online-tokens")
+      "/auth/tokens",
+      false
     );
 
     res.redirect(redirectUrl);
@@ -68,27 +69,8 @@ export default function applyAuthMiddleware(app) {
       const host = req.query.host;
       const { shop } = session;
 
+      await webhookRegistrar(session);
       await StoreModel.findOneAndUpdate({ shop }, { isActive: true });
-
-      /*app.set(
-        "active-shopify-shops",
-        Object.assign(app.get("active-shopify-shops"), {
-          [session.shop]: session.scope,
-        })
-      );*/
-
-      const response = await Shopify.Webhooks.Registry.register({
-        shop: session.shop,
-        accessToken: session.accessToken,
-        topic: "APP_UNINSTALLED",
-        path: "/webhooks",
-      });
-
-      if (!response["APP_UNINSTALLED"].success) {
-        console.log(
-          `Failed to register APP_UNINSTALLED webhook: ${response.result}`
-        );
-      }
 
       // Redirect to app with shop parameter upon auth
       res.redirect(`/?shop=${shop}&host=${host}`);

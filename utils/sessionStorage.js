@@ -1,11 +1,11 @@
 import SessionModel from "./models/SessionModel.js";
 import { Shopify } from "@shopify/shopify-api";
 import Cryptr from "cryptr";
+
 const cryption = new Cryptr(process.env.ENCRYPTION_STRING);
 
 const storeCallback = async (session) => {
     const result = await SessionModel.findOne({ id: session.id });
-
     if (result === null) {
       await SessionModel.create({
         id: session.id,

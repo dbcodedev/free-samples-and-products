@@ -1,4 +1,4 @@
-import { ResourcePicker, Toast } from "@shopify/app-bridge-react";
+import { ResourcePicker, Toast, useAppBridge } from "@shopify/app-bridge-react";
 import { Button, Card, Checkbox, FormLayout, Frame, Icon, Layout, Page, PageActions, TextContainer, TextField } from "@shopify/polaris";
 import { CircleTickOutlineMinor, CircleCancelMinor } from '@shopify/polaris-icons';
 import { useState, useCallback, useEffect } from "react";
@@ -7,7 +7,6 @@ import "../css/custom.css";
 import { useSettings } from "../context/SettingsContext";
 import { useSaveData } from "../hooks/useBackend";
 
-import { useAppBridge } from "@shopify/app-bridge-react";
 import { userLoggedInFetch } from "../App";
 
 export function Settings() {

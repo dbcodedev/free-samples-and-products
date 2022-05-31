@@ -2,7 +2,6 @@ import StoreModel from "../../utils/models/StoreModel.js";
 
 const isActiveShop = async (req, res, next) => {
   const { shop, host } = req.query;
-  console.log(shop)
 
   if (!shop) {
     next();

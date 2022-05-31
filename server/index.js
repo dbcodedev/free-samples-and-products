@@ -73,13 +73,9 @@ Shopify.Webhooks.Registry.addHandlers({
 });
 
 // export for test use only
-export async function createServer(
-  root = process.cwd(),
-  isProd = process.env.NODE_ENV === "production"
-) {
+export async function createServer(root = process.cwd()) {
   const app = express();
   app.set("top-level-oauth-cookie", TOP_LEVEL_OAUTH_COOKIE);
-  //app.set("active-shopify-shops", ACTIVE_SHOPIFY_SHOPS);
   app.set("use-online-tokens", USE_ONLINE_TOKENS);
 
   app.use(cookieParser(Shopify.Context.API_SECRET_KEY));
@@ -87,8 +83,6 @@ export async function createServer(
   applyAuthMiddleware(app);
 
   app.use("/webhooks", webhookRoutes);
-
-  app.use("/apps", verifyRequest(app), routes);
 
   app.post("/graphql", verifyRequest(app), async (req, res) => {
     try {
@@ -102,6 +96,7 @@ export async function createServer(
   app.use(express.json());
   app.use(csp);
   app.use(isActiveShop);
+  app.use("/apps", verifyRequest(app), routes);
 
   /*app.use((req, res, next) => {
     const shop = req.query.shop;
@@ -132,7 +127,7 @@ export async function createServer(
    * @type {import('vite').ViteDevServer}
    */
   let vite;
-  if (!isProd) {
+  if (isDev) {
     vite = await import("vite").then(({ createServer }) =>
       createServer({
         root,
@@ -172,6 +167,8 @@ export async function createServer(
   return { app, vite };
 }
 
-if (!isDev) {
-  createServer().then(({ app }) => app.listen(PORT));
-}
+createServer().then(({ app }) => {
+  app.listen(PORT, () => {
+    console.log(`Running on ${PORT}`);
+  });
+});
