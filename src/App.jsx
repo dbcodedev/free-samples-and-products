@@ -5,7 +5,7 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 import { Provider as AppBridgeProvider, useAppBridge } from "@shopify/app-bridge-react";
-import { authenticatedFetch } from "@shopify/app-bridge-utils";
+import { authenticatedFetch, getSessionToken } from "@shopify/app-bridge-utils";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { AppProvider } from "@shopify/polaris";
 import translations from "@shopify/polaris/locales/en.json";
@@ -16,33 +16,9 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Link } from "./router/Link";
 import AppRoutes from "./router/AppRoutes";
 
-import { SettingsProvider } from "./context/SettingsContext";
-import { useState, useEffect } from "react";
-
-import { useGetData } from "./hooks/useBackend";
+import { UserSettingsProvider } from "./context/UserSettingsProvider";
 
 export default function App() {
-
-  const [settings, setSettings] = useState({});
-
-  useEffect(() => {
-    const settings = useGetData("settings");
-      
-    if (settings.length > 0) {
-        setSettings(settings[0]);
-    } else {
-        const set = {
-            maxProductsByUser: "5",
-            maxReferenceByUser: "2",
-            maxProducts: "0",
-            displayRandomly: false,
-            hideOutOfStock: true,
-            minCartProducts: "0",
-            minCartAmount: "0",
-        }
-        setSettings(set);
-    }
-}, []);
 
   return (
     <Router>
@@ -54,18 +30,18 @@ export default function App() {
               forceRedirect: true,
             }}
           >
-            <SettingsProvider value={[settings, setSettings]}>
-              <MyApolloProvider>
-                <AppRoutes />
-              </MyApolloProvider>
-            </SettingsProvider>
+            <UserSettingsProvider>
+              <MyProvider>
+                  <AppRoutes />
+              </MyProvider>
+            </UserSettingsProvider>
           </AppBridgeProvider>
       </AppProvider>
     </Router>
   );
 }
 
-function MyApolloProvider({ children }) {
+function MyProvider({ children }) {
   const app = useAppBridge();
 
   const client = new ApolloClient({

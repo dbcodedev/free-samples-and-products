@@ -105,4 +105,4 @@ export default function verifyRequest(app, { returnHeader = true } = {}) {
       res.redirect(`/auth?shop=${shop}&host=${host}`);
     }
   };
-}
+};

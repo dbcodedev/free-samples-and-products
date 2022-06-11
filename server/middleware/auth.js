@@ -67,13 +67,13 @@ export default function applyAuthMiddleware(app) {
       );
 
       const host = req.query.host;
-      const { shop } = session;
+      const shop = req.query.shop;
 
       await webhookRegistrar(session);
       await StoreModel.findOneAndUpdate({ shop }, { isActive: true });
 
       // Redirect to app with shop parameter upon auth
-      res.redirect(`/?shop=${shop}&host=${host}`);
+      return res.redirect(`/?shop=${shop}&host=${host}`);
     } catch (e) {
       switch (true) {
         case e instanceof Shopify.Errors.InvalidOAuthError:
